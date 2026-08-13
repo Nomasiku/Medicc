@@ -548,9 +548,19 @@
                 }
 
                 const response = await fetch(apiUrl('/documentos/' + encodeURIComponent(idOrigem) + '?cliente=10'));
-                const data = await response.json();
+                const raw = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(raw);
+                } catch (parseErr) {
+                    console.error('Resposta não-JSON:', raw.slice(0, 200));
+                    setStatus('invalid', 'Falha na API');
+                    document.getElementById('sidebarBody').innerHTML =
+                        '<p style="color:#c62828;text-align:center;padding:24px 12px;">Não foi possível consultar o documento.<br><small>A API não respondeu corretamente. Confirme se o index.html novo foi publicado no Render.</small></p>';
+                    return;
+                }
 
-                if (!data.success || !data.data) {
+                if (!response.ok || !data.success || !data.data) {
                     setStatus('invalid', 'Documento não encontrado');
                     document.getElementById('sidebarBody').innerHTML =
                         '<p style="color:#c62828;text-align:center;padding:24px 12px;">Documento não encontrado ou expirado.</p>';
