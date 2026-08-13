@@ -443,7 +443,7 @@
 
         function preencherSidebar(doc, valido) {
             const dn = montarCertificadoDN(doc);
-            const dataAssinatura = formatarDataHora(doc.dataCriacao || doc.dataEmissao || new Date().toISOString());
+            const dataAssinatura = formatarDataHora(doc.dataAssinatura || doc.dataCriacao || doc.dataEmissao || new Date().toISOString());
             const nome = doc.nome || doc.pacienteNome || '—';
             const cpf = formatarCPF(doc.cpf || doc.pacienteCPF);
             const body = document.getElementById('sidebarBody');
