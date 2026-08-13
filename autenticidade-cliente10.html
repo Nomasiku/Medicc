@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificar Autenticidade do Documento</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --teal: #00A8B5;
+            --teal-dark: #008C97;
+            --sidebar-bg: #E8F4F5;
+            --sidebar-header: #00A8B5;
+            --dark-viewer: #1a1a1a;
+            --text: #222;
+            --muted: #555;
+            --success: #27AE60;
+            --error: #E74C3C;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f0f0f0;
+            color: var(--text);
+        }
+
+        /* ========== TOP BAR (igual à foto) ========== */
+        .top-bar {
+            background: var(--teal);
+            color: #fff;
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+        .top-bar i { font-size: 16px; opacity: 0.95; }
+
+        /* ========== LAYOUT ========== */
+        .layout {
+            display: flex;
+            height: calc(100vh - 40px);
+            min-height: 480px;
+        }
+
+        /* ========== SIDEBAR DETALHES ========== */
+        .sidebar {
+            width: 280px;
+            min-width: 240px;
+            background: #fff;
+            border-right: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            background: var(--teal);
+            color: #fff;
+            padding: 14px 16px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .sidebar-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            font-size: 12px;
+            line-height: 1.55;
+            color: var(--muted);
+        }
+
+        .sidebar-body ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .sidebar-body li {
+            margin-bottom: 14px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .sidebar-body li:last-child { border-bottom: none; }
+
+        .sidebar-body strong {
+            display: block;
+            color: var(--text);
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .cert-dn {
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: #333;
+            background: #f7f7f7;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #eee;
+        }
+
+        .badge-ok {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--success);
+            font-weight: 600;
+            font-size: 13px;
+        }
+        .badge-ok i { font-size: 14px; }
+
+        .msg-list {
+            margin-top: 6px;
+            padding-left: 0;
+        }
+        .msg-list li {
+            border: none !important;
+            padding: 4px 0 !important;
+            margin: 0 !important;
+            font-size: 11.5px;
+            color: var(--muted);
+        }
+        .msg-list li::before {
+            content: "• ";
+            color: var(--teal);
+            font-weight: 700;
+        }
+
+        /* ========== VIEWER (área escura) ========== */
+        .viewer {
+            flex: 1;
+            background: var(--dark-viewer);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            min-width: 0;
+        }
+
+        .viewer-toolbar {
+            background: #2a2a2a;
+            color: #ccc;
+            padding: 8px 14px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #333;
+        }
+
+        .viewer-toolbar .filename {
+            opacity: 0.85;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 60%;
+        }
+
+        .viewer-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: auto;
+        }
+
+        .viewer-placeholder {
+            text-align: center;
+            color: #888;
+        }
+
+        .viewer-placeholder .icon-doc {
+            font-size: 56px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .viewer-placeholder .fname {
+            font-size: 13px;
+            margin-bottom: 18px;
+            color: #aaa;
+        }
+
+        .btn-abrir {
+            background: var(--teal);
+            color: #fff;
+            border: none;
+            border-radius: 24px;
+            padding: 12px 32px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s;
+            box-shadow: 0 4px 14px rgba(0,168,181,0.35);
+        }
+        .btn-abrir:hover {
+            background: var(--teal-dark);
+            transform: translateY(-1px);
+        }
+        .btn-abrir:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* PDF embed */
+        #pdfFrame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: none;
+            background: #525252;
+        }
+
+        /* Status overlay */
+        .status-overlay {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(0,0,0,0.75);
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            z-index: 5;
+        }
+        .status-overlay.show { display: flex; }
+        .status-overlay.valid { border-left: 4px solid var(--success); }
+        .status-overlay.invalid { border-left: 4px solid var(--error); }
+        .status-overlay.loading { border-left: 4px solid var(--teal); }
+
+        /* Loading spinner */
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Info bar bottom */
+        .info-bar {
+            background: #111;
+            color: #999;
+            padding: 8px 14px;
+            font-size: 11px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            border-top: 1px solid #333;
+        }
+        .info-bar strong { color: #ccc; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .layout { flex-direction: column; height: auto; min-height: calc(100vh - 40px); }
+            .sidebar { width: 100%; max-height: 40vh; border-right: none; border-bottom: 1px solid #ddd; }
+            .viewer { min-height: 50vh; }
+        }
+
+        @media print {
+            .top-bar, .viewer-toolbar, .btn-abrir, .status-overlay { display: none !important; }
+            .layout { height: auto; }
+            .sidebar { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <i class="fas fa-shield-alt"></i>
+        VERIFICAR AUTENTICIDADE DO DOCUMENTO
+    </div>
+
+    <div class="layout">
+        <!-- SIDEBAR: Detalhes da Assinatura -->
+        <aside class="sidebar">
+            <div class="sidebar-header">Detalhes da Assinatura</div>
+            <div class="sidebar-body" id="sidebarBody">
+                <p style="color:#999; text-align:center; padding: 24px 0;">
+                    <span class="spinner" style="border-color:rgba(0,0,0,0.15);border-top-color:var(--teal);display:inline-block;"></span><br><br>
+                    Carregando dados da assinatura...
+                </p>
+            </div>
+        </aside>
+
+        <!-- VIEWER -->
+        <section class="viewer">
+            <div class="viewer-toolbar">
+                <span class="filename" id="viewerFilename">documento.pdf</span>
+                <span id="viewerMeta">—</span>
+            </div>
+
+            <div class="viewer-content" id="viewerContent">
+                <div class="status-overlay loading show" id="statusOverlay">
+                    <div class="spinner"></div>
+                    <span>Verificando autenticidade...</span>
+                </div>
+
+                <div class="viewer-placeholder" id="placeholder">
+                    <div class="icon-doc"><i class="fas fa-file-pdf"></i></div>
+                    <div class="fname" id="placeholderName">documentoAssinatura.pdf</div>
+                    <button class="btn-abrir" id="btnAbrir" disabled onclick="abrirDocumento()">Abrir</button>
+                </div>
+
+                <iframe id="pdfFrame" title="Prévia do documento"></iframe>
+            </div>
+
+            <div class="info-bar">
+                <span><strong>Código:</strong> <span id="infoCodigo">—</span></span>
+                <span><strong>Paciente:</strong> <span id="infoPaciente">—</span></span>
+                <span><strong>Médico:</strong> <span id="infoMedico">—</span></span>
+                <span><strong>Unidade:</strong> <span id="infoUnidade">—</span></span>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const API_URL = '/api/cliente10';
+        let documentoData = null;
+        let pdfUrlAtual = null;
+
+        const tiposDocumento = {
+            'RECEITUARIO': 'Receituário',
+            'ATESTADO_MEDICO': 'Atestado Médico',
+            'ATESTADO_COMPARECIMENTO': 'Atestado de Comparecimento',
+            'RECEITA_ESPECIAL': 'Receita Médica / Controle Especial',
+            'LAUDO': 'Laudo',
+            'TOXICOLOGICO': 'Toxicológico'
+        };
+
+        function formatarData(dataISO) {
+            if (!dataISO) return '—';
+            try {
+                return new Date(dataISO).toLocaleString('pt-BR', {
+                    day: '2-digit', month: '2-digit', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit', second: '2-digit'
+                });
+            } catch (_) { return dataISO; }
+        }
+
+        function formatarCPF(cpf) {
+            if (!cpf) return '—';
+            const n = String(cpf).replace(/\D/g, '');
+            if (n.length !== 11) return cpf;
+            return n.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        }
+
+        function setStatus(tipo, texto) {
+            const el = document.getElementById('statusOverlay');
+            el.className = 'status-overlay show ' + tipo;
+            if (tipo === 'loading') {
+                el.innerHTML = '<div class="spinner"></div><span>' + texto + '</span>';
+            } else if (tipo === 'valid') {
+                el.innerHTML = '<i class="fas fa-check-circle" style="color:#27AE60"></i><span>' + texto + '</span>';
+            } else {
+                el.innerHTML = '<i class="fas fa-times-circle" style="color:#E74C3C"></i><span>' + texto + '</span>';
+            }
+        }
+
+        function montarCertificadoDN(doc) {
+            // Simula DN de certificado ICP-Brasil no estilo da foto
+            const nome = (doc.medicoNome || 'MEDICO').toUpperCase().replace(/\s+/g, ' ');
+            const crm = (doc.medicoCRM || '').replace(/\D/g, '') || '000000';
+            return `C=BR,O=ICP-Brasil,OU=Secretaria da Receita Federal do Brasil - RFB,OU=RFB e-CPF A3,OU=VALID,OU=AR CFM,OU=Presencial,OU=${crm},CN=${nome}`;
+        }
+
+        function preencherSidebar(doc, valido) {
+            const dn = montarCertificadoDN(doc);
+            const dataAssinatura = formatarData(doc.dataEmissao || doc.dataCriacao);
+            const body = document.getElementById('sidebarBody');
+
+            body.innerHTML = `
+                <ul>
+                    <li>
+                        <strong>Assinado por</strong>
+                        <div class="cert-dn">${dn}</div>
+                        <div style="margin-top:6px;font-size:11px;color:#666;">
+                            em ${dataAssinatura}
+                        </div>
+                    </li>
+                    <li>
+                        <strong>Assinatura</strong>
+                        <span class="badge-ok">
+                            <i class="fas fa-check-circle"></i>
+                            ${valido ? 'Assinatura válida' : 'Assinatura inválida / documento expirado'}
+                        </span>
+                    </li>
+                    <li>
+                        <strong>Mensagens</strong>
+                        <ul class="msg-list">
+                            <li>A identidade do signatário e suas cadeias são ou estavam válidas no momento da assinatura.</li>
+                            <li>O documento ${valido ? 'não foi' : 'pode ter sido'} modificado após a aplicação da assinatura.</li>
+                            <li>A data e hora da assinatura são de uma autoridade de carimbo do tempo confiável.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong>Paciente</strong>
+                        ${(doc.nome || doc.pacienteNome || '—')}${(doc.cpf || doc.pacienteCPF) ? ' · ' + formatarCPF(doc.cpf || doc.pacienteCPF) : ''}
+                    </li>
+                    <li>
+                        <strong>Data de nascimento</strong>
+                        ${doc.dataNascimento ? formatarData(doc.dataNascimento).split(',')[0] : '—'}
+                    </li>
+                    <li>
+                        <strong>Unidade hospitalar</strong>
+                        ${doc.unidadeHospitalar || '—'}
+                    </li>
+                    <li>
+                        <strong>Código de autenticidade</strong>
+                        <div class="cert-dn" style="font-size:11px;">${doc.codigo || doc.codigoAutenticidade || '—'}</div>
+                    </li>
+                </ul>
+            `;
+        }
+
+        function preencherInfoBar(doc) {
+            document.getElementById('infoCodigo').textContent = doc.codigo || doc.codigoAutenticidade || doc.id || '—';
+            const nome = doc.nome || doc.pacienteNome;
+            const cpf = doc.cpf || doc.pacienteCPF;
+            document.getElementById('infoPaciente').textContent = nome
+                ? `${nome}${cpf ? ' · ' + formatarCPF(cpf) : ''}`
+                : '—';
+            document.getElementById('infoMedico').textContent = doc.medicoNome
+                ? `${doc.medicoNome}${doc.medicoCRM ? ' · ' + doc.medicoCRM : ''}`
+                : '—';
+            const u = document.getElementById('infoUnidade');
+            if (u) u.textContent = doc.unidadeHospitalar || '—';
+        }
+
+        function abrirDocumento() {
+            if (!pdfUrlAtual) {
+                // Sem PDF: mostra conteúdo textual em nova aba
+                if (documentoData && documentoData.conteudo) {
+                    const w = window.open('', '_blank');
+                    w.document.write(`
+                        <html><head><title>Documento</title>
+                        <style>body{font-family:sans-serif;padding:40px;max-width:800px;margin:0 auto;line-height:1.7}
+                        h1{font-size:18px;color:#008C97}</style></head>
+                        <body>
+                        <h1>${tiposDocumento[documentoData.tipo] || 'Documento Médico'}</h1>
+                        <p><strong>Paciente:</strong> ${documentoData.pacienteNome || '—'}</p>
+                        <p><strong>Médico:</strong> ${documentoData.medicoNome || '—'} ${documentoData.medicoCRM || ''}</p>
+                        <p><strong>Emissão:</strong> ${formatarData(documentoData.dataEmissao)}</p>
+                        <hr>
+                        <div>${(documentoData.conteudo || '').replace(/\n/g, '<br>')}</div>
+                        </body></html>
+                    `);
+                    w.document.close();
+                }
+                return;
+            }
+            // Abre PDF em nova aba ou embute
+            const frame = document.getElementById('pdfFrame');
+            const ph = document.getElementById('placeholder');
+            frame.src = pdfUrlAtual;
+            frame.style.display = 'block';
+            ph.style.display = 'none';
+        }
+
+        async function carregarDocumento() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const idOrigem = params.get('idOrigem') || params.get('id');
+                const tipoOrigem = params.get('tipoOrigem') || params.get('tipo');
+
+                if (!idOrigem) {
+                    setStatus('invalid', 'Parâmetros inválidos');
+                    document.getElementById('sidebarBody').innerHTML =
+                        '<p style="color:#E74C3C;text-align:center;padding:20px;">Documento não informado na URL.</p>';
+                    return;
+                }
+
+                const response = await fetch(`${API_URL}/documentos/${encodeURIComponent(idOrigem)}?cliente=10`);
+                const data = await response.json();
+
+                if (!data.success || !data.data) {
+                    setStatus('invalid', 'Documento não encontrado');
+                    document.getElementById('sidebarBody').innerHTML =
+                        '<p style="color:#E74C3C;text-align:center;padding:20px;">Documento não encontrado ou expirado.</p>';
+                    return;
+                }
+
+                documentoData = data.data;
+
+                // Validade
+                let valido = documentoData.ativo !== false;
+                if (documentoData.dataValidade) {
+                    const dv = new Date(documentoData.dataValidade);
+                    if (!isNaN(dv) && new Date() > dv) valido = false;
+                }
+
+                preencherSidebar(documentoData, valido);
+                preencherInfoBar(documentoData);
+
+                const nomeArquivo = documentoData.pdfUrl
+                    ? documentoData.pdfUrl.split('/').pop()
+                    : `documentoAssinatura_${documentoData.id}.pdf`;
+
+                document.getElementById('viewerFilename').textContent = nomeArquivo;
+                document.getElementById('placeholderName').textContent = nomeArquivo;
+                document.getElementById('viewerMeta').textContent = tiposDocumento[documentoData.tipo] || documentoData.tipo || '';
+
+                pdfUrlAtual = documentoData.pdfUrl || null;
+                const btn = document.getElementById('btnAbrir');
+                btn.disabled = false;
+
+                if (valido) {
+                    setStatus('valid', 'Documento autenticado');
+                    setTimeout(() => {
+                        document.getElementById('statusOverlay').classList.remove('show');
+                    }, 3500);
+                } else {
+                    setStatus('invalid', 'Documento expirado ou inativo');
+                }
+
+                // Se tiver PDF, já prepara o frame (usuário clica em Abrir)
+            } catch (err) {
+                console.error(err);
+                setStatus('invalid', 'Erro ao verificar: ' + err.message);
+                document.getElementById('sidebarBody').innerHTML =
+                    '<p style="color:#E74C3C;text-align:center;padding:20px;">Falha na verificação.</p>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', carregarDocumento);
+    </script>
+</body>
+</html>
