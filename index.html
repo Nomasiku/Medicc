@@ -2,8 +2,10 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>Verificar Autenticidade do Documento</title>
+    <link rel="icon" type="image/x-icon" href="https://hmdlj.vitai.care/hmdlj/pages/images/favicon.ico">
+    <link rel="shortcut icon" href="https://hmdlj.vitai.care/hmdlj/pages/images/favicon.ico">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -11,50 +13,54 @@
         :root {
             --teal: #00A8B5;
             --teal-dark: #008C97;
-            --sidebar-bg: #E8F4F5;
-            --sidebar-header: #00A8B5;
-            --dark-viewer: #1a1a1a;
+            --dark-viewer: #1c1c1c;
             --text: #222;
             --muted: #555;
-            --success: #27AE60;
-            --error: #E74C3C;
+            --success: #2e7d32;
+            --error: #c62828;
+            --sidebar-w: 300px;
         }
 
         html, body {
             height: 100%;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: #f0f0f0;
+            background: #eaeaea;
             color: var(--text);
         }
 
-        /* ========== TOP BAR (igual à foto) ========== */
+        /* TOP BAR */
         .top-bar {
             background: var(--teal);
             color: #fff;
-            padding: 10px 16px;
+            padding: 11px 16px;
             font-size: 13px;
             font-weight: 600;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.4px;
             display: flex;
             align-items: center;
             gap: 10px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            text-transform: uppercase;
         }
-        .top-bar i { font-size: 16px; opacity: 0.95; }
+        .top-bar .dot {
+            width: 8px; height: 8px;
+            background: rgba(255,255,255,0.85);
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
 
-        /* ========== LAYOUT ========== */
         .layout {
             display: flex;
-            height: calc(100vh - 40px);
-            min-height: 480px;
+            height: calc(100vh - 42px);
+            min-height: 420px;
         }
 
-        /* ========== SIDEBAR DETALHES ========== */
+        /* SIDEBAR */
         .sidebar {
-            width: 280px;
-            min-width: 240px;
+            width: var(--sidebar-w);
+            min-width: 260px;
             background: #fff;
-            border-right: 1px solid #ddd;
+            border-right: 1px solid #d0d0d0;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -63,18 +69,20 @@
         .sidebar-header {
             background: var(--teal);
             color: #fff;
-            padding: 14px 16px;
-            font-size: 14px;
+            padding: 12px 14px;
+            font-size: 13.5px;
             font-weight: 700;
+            letter-spacing: 0.2px;
         }
 
         .sidebar-body {
             flex: 1;
             overflow-y: auto;
-            padding: 16px;
+            padding: 14px 14px 20px;
             font-size: 12px;
-            line-height: 1.55;
+            line-height: 1.5;
             color: var(--muted);
+            -webkit-overflow-scrolling: touch;
         }
 
         .sidebar-body ul {
@@ -83,30 +91,31 @@
             padding: 0;
         }
 
-        .sidebar-body li {
+        .sidebar-body > ul > li {
             margin-bottom: 14px;
             padding-bottom: 12px;
             border-bottom: 1px solid #eee;
         }
-
-        .sidebar-body li:last-child { border-bottom: none; }
+        .sidebar-body > ul > li:last-child { border-bottom: none; margin-bottom: 0; }
 
         .sidebar-body strong {
             display: block;
-            color: var(--text);
+            color: #1a1a1a;
             font-size: 12px;
-            margin-bottom: 4px;
+            margin-bottom: 5px;
+            font-weight: 700;
         }
 
         .cert-dn {
-            word-break: break-all;
-            font-family: 'Courier New', monospace;
+            word-break: break-word;
+            font-family: Consolas, 'Courier New', monospace;
             font-size: 11px;
             color: #333;
-            background: #f7f7f7;
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #eee;
+            background: #f6f6f6;
+            padding: 8px 9px;
+            border-radius: 3px;
+            border: 1px solid #e8e8e8;
+            line-height: 1.45;
         }
 
         .badge-ok {
@@ -115,28 +124,41 @@
             gap: 6px;
             color: var(--success);
             font-weight: 600;
-            font-size: 13px;
+            font-size: 12.5px;
         }
-        .badge-ok i { font-size: 14px; }
+        .badge-ok i { font-size: 13px; }
+        .badge-err {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--error);
+            font-weight: 600;
+            font-size: 12.5px;
+        }
 
         .msg-list {
-            margin-top: 6px;
-            padding-left: 0;
+            margin: 4px 0 0;
+            padding: 0;
+            list-style: none;
         }
         .msg-list li {
+            position: relative;
+            padding: 3px 0 3px 12px;
+            margin: 0;
             border: none !important;
-            padding: 4px 0 !important;
-            margin: 0 !important;
             font-size: 11.5px;
-            color: var(--muted);
+            color: #555;
+            line-height: 1.45;
         }
         .msg-list li::before {
-            content: "• ";
+            content: "•";
+            position: absolute;
+            left: 0;
             color: var(--teal);
             font-weight: 700;
         }
 
-        /* ========== VIEWER (área escura) ========== */
+        /* VIEWER */
         .viewer {
             flex: 1;
             background: var(--dark-viewer);
@@ -147,22 +169,21 @@
         }
 
         .viewer-toolbar {
-            background: #2a2a2a;
-            color: #ccc;
+            background: #2b2b2b;
+            color: #bdbdbd;
             padding: 8px 14px;
             font-size: 12px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             border-bottom: 1px solid #333;
+            gap: 10px;
         }
-
         .viewer-toolbar .filename {
-            opacity: 0.85;
+            opacity: 0.9;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 60%;
         }
 
         .viewer-content {
@@ -172,90 +193,92 @@
             justify-content: center;
             position: relative;
             overflow: auto;
+            background: #1c1c1c;
         }
 
         .viewer-placeholder {
             text-align: center;
-            color: #888;
+            color: #8a8a8a;
+            padding: 24px;
         }
-
         .viewer-placeholder .icon-doc {
-            font-size: 56px;
-            margin-bottom: 12px;
-            opacity: 0.5;
+            font-size: 48px;
+            margin-bottom: 10px;
+            opacity: 0.45;
+            color: #9e9e9e;
         }
-
         .viewer-placeholder .fname {
             font-size: 13px;
             margin-bottom: 18px;
-            color: #aaa;
+            color: #a0a0a0;
         }
 
         .btn-abrir {
             background: var(--teal);
             color: #fff;
             border: none;
-            border-radius: 24px;
-            padding: 12px 32px;
-            font-size: 15px;
+            border-radius: 22px;
+            padding: 11px 30px;
+            font-size: 14.5px;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s, transform 0.15s;
-            box-shadow: 0 4px 14px rgba(0,168,181,0.35);
+            transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+            box-shadow: 0 3px 12px rgba(0,168,181,0.35);
         }
         .btn-abrir:hover {
             background: var(--teal-dark);
             transform: translateY(-1px);
         }
         .btn-abrir:disabled {
-            opacity: 0.5;
+            opacity: 0.45;
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
         }
 
-        /* PDF embed */
-        #pdfFrame {
+        #pdfFrame, #imgPreview {
             width: 100%;
             height: 100%;
             border: none;
             display: none;
             background: #525252;
         }
+        #imgPreview {
+            object-fit: contain;
+            background: #1c1c1c;
+            padding: 12px;
+        }
 
-        /* Status overlay */
         .status-overlay {
             position: absolute;
-            top: 16px;
-            right: 16px;
-            background: rgba(0,0,0,0.75);
+            top: 14px;
+            right: 14px;
+            background: rgba(0,0,0,0.78);
             color: #fff;
-            padding: 10px 14px;
+            padding: 9px 13px;
             border-radius: 8px;
             font-size: 12px;
             display: none;
             align-items: center;
             gap: 8px;
             z-index: 5;
+            max-width: 80%;
         }
         .status-overlay.show { display: flex; }
-        .status-overlay.valid { border-left: 4px solid var(--success); }
-        .status-overlay.invalid { border-left: 4px solid var(--error); }
-        .status-overlay.loading { border-left: 4px solid var(--teal); }
+        .status-overlay.valid { border-left: 3px solid #4caf50; }
+        .status-overlay.invalid { border-left: 3px solid #ef5350; }
+        .status-overlay.loading { border-left: 3px solid var(--teal); }
 
-        /* Loading spinner */
         .spinner {
-            width: 18px;
-            height: 18px;
-            border: 2px solid rgba(255,255,255,0.3);
+            width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.25);
             border-top-color: #fff;
             border-radius: 50%;
             animation: spin 0.7s linear infinite;
+            flex-shrink: 0;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Info bar bottom */
         .info-bar {
             background: #111;
             color: #999;
@@ -264,49 +287,52 @@
             display: flex;
             justify-content: space-between;
             flex-wrap: wrap;
-            gap: 8px;
-            border-top: 1px solid #333;
+            gap: 8px 16px;
+            border-top: 1px solid #2a2a2a;
         }
-        .info-bar strong { color: #ccc; }
+        .info-bar strong { color: #ccc; font-weight: 600; }
 
-        /* Responsive */
+        /* Loading sidebar */
+        .loading-side {
+            text-align: center;
+            color: #999;
+            padding: 32px 12px;
+        }
+
         @media (max-width: 768px) {
-            .layout { flex-direction: column; height: auto; min-height: calc(100vh - 40px); }
-            .sidebar { width: 100%; max-height: 40vh; border-right: none; border-bottom: 1px solid #ddd; }
-            .viewer { min-height: 50vh; }
-        }
-
-        @media print {
-            .top-bar, .viewer-toolbar, .btn-abrir, .status-overlay { display: none !important; }
-            .layout { height: auto; }
-            .sidebar { width: 100%; }
+            .layout { flex-direction: column; height: auto; min-height: calc(100vh - 42px); }
+            .sidebar {
+                width: 100%;
+                min-width: 0;
+                max-height: 42vh;
+                border-right: none;
+                border-bottom: 1px solid #d0d0d0;
+            }
+            .viewer { min-height: 55vh; }
         }
     </style>
 </head>
 <body>
-    <!-- TOP BAR -->
     <div class="top-bar">
-        <i class="fas fa-shield-alt"></i>
-        VERIFICAR AUTENTICIDADE DO DOCUMENTO
+        <span class="dot"></span>
+        Verificar autenticidade do documento
     </div>
 
     <div class="layout">
-        <!-- SIDEBAR: Detalhes da Assinatura -->
         <aside class="sidebar">
             <div class="sidebar-header">Detalhes da Assinatura</div>
             <div class="sidebar-body" id="sidebarBody">
-                <p style="color:#999; text-align:center; padding: 24px 0;">
-                    <span class="spinner" style="border-color:rgba(0,0,0,0.15);border-top-color:var(--teal);display:inline-block;"></span><br><br>
+                <div class="loading-side">
+                    <div class="spinner" style="margin:0 auto 12px;border-color:rgba(0,0,0,0.12);border-top-color:var(--teal);"></div>
                     Carregando dados da assinatura...
-                </p>
+                </div>
             </div>
         </aside>
 
-        <!-- VIEWER -->
         <section class="viewer">
             <div class="viewer-toolbar">
-                <span class="filename" id="viewerFilename">documento.pdf</span>
-                <span id="viewerMeta">—</span>
+                <span class="filename" id="viewerFilename">documentoAssinatura.pdf</span>
+                <span id="viewerMeta"></span>
             </div>
 
             <div class="viewer-content" id="viewerContent">
@@ -321,7 +347,8 @@
                     <button class="btn-abrir" id="btnAbrir" disabled onclick="abrirDocumento()">Abrir</button>
                 </div>
 
-                <iframe id="pdfFrame" title="Prévia do documento"></iframe>
+                <iframe id="pdfFrame" title="Documento"></iframe>
+                <img id="imgPreview" alt="Documento">
             </div>
 
             <div class="info-bar">
@@ -334,33 +361,63 @@
     </div>
 
     <script>
-        const API_URL = '/api/cliente10';
-        let documentoData = null;
-        let pdfUrlAtual = null;
+        const BACKEND = 'http://br2.bronxyshost.com:4009';
+        const PROXY_BASE = 'https://orange-hill-2e61.gbscabral15.workers.dev/br2.bronxyshost.com:4009/proxy?url=';
 
-        const tiposDocumento = {
-            'RECEITUARIO': 'Receituário',
-            'ATESTADO_MEDICO': 'Atestado Médico',
-            'ATESTADO_COMPARECIMENTO': 'Atestado de Comparecimento',
-            'RECEITA_ESPECIAL': 'Receita Médica / Controle Especial',
-            'LAUDO': 'Laudo',
-            'TOXICOLOGICO': 'Toxicológico'
-        };
+        function isBackendLocal() {
+            return location.hostname === 'br2.bronxyshost.com' || String(location.port) === '4009';
+        }
+
+        /** Monta URL da API (respeita HTTPS com proxy) */
+        function apiUrl(path) {
+            // path ex: /documentos/4555?cliente=10
+            if (isBackendLocal()) return '/api/cliente10' + path;
+            const full = BACKEND + '/api/cliente10' + path;
+            if (location.protocol === 'https:') {
+                return PROXY_BASE + encodeURIComponent(full);
+            }
+            return full;
+        }
+
+        /** Monta URL de arquivo/PDF */
+        function fileUrl(pdfPath) {
+            if (!pdfPath) return null;
+            if (/^https?:\/\//i.test(pdfPath)) return pdfPath;
+            if (isBackendLocal()) return pdfPath;
+            const full = BACKEND + (pdfPath.startsWith('/') ? pdfPath : '/' + pdfPath);
+            if (location.protocol === 'https:') {
+                return PROXY_BASE + encodeURIComponent(full);
+            }
+            return full;
+        }
+
+        let documentoData = null;
+        let arquivoUrl = null;
+
+        function formatarDataHora(dataISO) {
+            if (!dataISO) return '—';
+            try {
+                const d = new Date(dataISO);
+                if (isNaN(d)) return dataISO;
+                const pad = n => String(n).padStart(2, '0');
+                return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear()
+                    + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+            } catch (_) { return dataISO; }
+        }
 
         function formatarData(dataISO) {
             if (!dataISO) return '—';
             try {
-                return new Date(dataISO).toLocaleString('pt-BR', {
-                    day: '2-digit', month: '2-digit', year: 'numeric',
-                    hour: '2-digit', minute: '2-digit', second: '2-digit'
-                });
+                const d = new Date(dataISO);
+                if (isNaN(d)) return dataISO;
+                return d.toLocaleDateString('pt-BR');
             } catch (_) { return dataISO; }
         }
 
         function formatarCPF(cpf) {
-            if (!cpf) return '—';
+            if (!cpf) return '';
             const n = String(cpf).replace(/\D/g, '');
-            if (n.length !== 11) return cpf;
+            if (n.length !== 11) return String(cpf);
             return n.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
         }
 
@@ -370,22 +427,25 @@
             if (tipo === 'loading') {
                 el.innerHTML = '<div class="spinner"></div><span>' + texto + '</span>';
             } else if (tipo === 'valid') {
-                el.innerHTML = '<i class="fas fa-check-circle" style="color:#27AE60"></i><span>' + texto + '</span>';
+                el.innerHTML = '<i class="fas fa-check-circle" style="color:#4caf50"></i><span>' + texto + '</span>';
             } else {
-                el.innerHTML = '<i class="fas fa-times-circle" style="color:#E74C3C"></i><span>' + texto + '</span>';
+                el.innerHTML = '<i class="fas fa-times-circle" style="color:#ef5350"></i><span>' + texto + '</span>';
             }
         }
 
         function montarCertificadoDN(doc) {
-            // Simula DN de certificado ICP-Brasil no estilo da foto
-            const nome = (doc.medicoNome || 'MEDICO').toUpperCase().replace(/\s+/g, ' ');
-            const crm = (doc.medicoCRM || '').replace(/\D/g, '') || '000000';
-            return `C=BR,O=ICP-Brasil,OU=Secretaria da Receita Federal do Brasil - RFB,OU=RFB e-CPF A3,OU=VALID,OU=AR CFM,OU=Presencial,OU=${crm},CN=${nome}`;
+            const nome = (doc.medicoNome || 'MEDICO RESPONSAVEL').toUpperCase().replace(/\s+/g, ' ').trim();
+            const crmDigits = String(doc.medicoCRM || '').replace(/\D/g, '') || '00000000000000';
+            // Estilo ICP-Brasil (igual à referência Vitai)
+            return 'C=BR,O=ICP-Brasil,OU=Secretaria da Receita Federal do Brasil - RFB,OU=RFB e-CPF A3,OU=VALID,OU=AR CFM,OU=Presencial,OU='
+                + crmDigits + ',CN=' + nome;
         }
 
         function preencherSidebar(doc, valido) {
             const dn = montarCertificadoDN(doc);
-            const dataAssinatura = formatarData(doc.dataEmissao || doc.dataCriacao);
+            const dataAssinatura = formatarDataHora(doc.dataCriacao || doc.dataEmissao || new Date().toISOString());
+            const nome = doc.nome || doc.pacienteNome || '—';
+            const cpf = formatarCPF(doc.cpf || doc.pacienteCPF);
             const body = document.getElementById('sidebarBody');
 
             body.innerHTML = `
@@ -399,10 +459,10 @@
                     </li>
                     <li>
                         <strong>Assinatura</strong>
-                        <span class="badge-ok">
-                            <i class="fas fa-check-circle"></i>
-                            ${valido ? 'Assinatura válida' : 'Assinatura inválida / documento expirado'}
-                        </span>
+                        ${valido
+                            ? '<span class="badge-ok"><i class="fas fa-check-circle"></i> Assinatura válida</span>'
+                            : '<span class="badge-err"><i class="fas fa-times-circle"></i> Assinatura inválida / documento expirado</span>'
+                        }
                     </li>
                     <li>
                         <strong>Mensagens</strong>
@@ -414,11 +474,11 @@
                     </li>
                     <li>
                         <strong>Paciente</strong>
-                        ${(doc.nome || doc.pacienteNome || '—')}${(doc.cpf || doc.pacienteCPF) ? ' · ' + formatarCPF(doc.cpf || doc.pacienteCPF) : ''}
+                        ${nome}${cpf ? ' · ' + cpf : ''}
                     </li>
                     <li>
                         <strong>Data de nascimento</strong>
-                        ${doc.dataNascimento ? formatarData(doc.dataNascimento).split(',')[0] : '—'}
+                        ${doc.dataNascimento ? formatarData(doc.dataNascimento) : '—'}
                     </li>
                     <li>
                         <strong>Unidade hospitalar</strong>
@@ -437,107 +497,96 @@
             const nome = doc.nome || doc.pacienteNome;
             const cpf = doc.cpf || doc.pacienteCPF;
             document.getElementById('infoPaciente').textContent = nome
-                ? `${nome}${cpf ? ' · ' + formatarCPF(cpf) : ''}`
+                ? (nome + (cpf ? ' · ' + formatarCPF(cpf) : ''))
                 : '—';
             document.getElementById('infoMedico').textContent = doc.medicoNome
-                ? `${doc.medicoNome}${doc.medicoCRM ? ' · ' + doc.medicoCRM : ''}`
+                ? (doc.medicoNome + (doc.medicoCRM ? ' · ' + doc.medicoCRM : ''))
                 : '—';
-            const u = document.getElementById('infoUnidade');
-            if (u) u.textContent = doc.unidadeHospitalar || '—';
+            document.getElementById('infoUnidade').textContent = doc.unidadeHospitalar || '—';
+        }
+
+        function resolverUrlArquivo(pdfUrl) {
+            return fileUrl(pdfUrl);
+        }
+
+        function isImagem(url) {
+            return /\.(png|jpe?g|gif|webp|bmp)(\?|$)/i.test(url || '');
         }
 
         function abrirDocumento() {
-            if (!pdfUrlAtual) {
-                // Sem PDF: mostra conteúdo textual em nova aba
-                if (documentoData && documentoData.conteudo) {
-                    const w = window.open('', '_blank');
-                    w.document.write(`
-                        <html><head><title>Documento</title>
-                        <style>body{font-family:sans-serif;padding:40px;max-width:800px;margin:0 auto;line-height:1.7}
-                        h1{font-size:18px;color:#008C97}</style></head>
-                        <body>
-                        <h1>${tiposDocumento[documentoData.tipo] || 'Documento Médico'}</h1>
-                        <p><strong>Paciente:</strong> ${documentoData.pacienteNome || '—'}</p>
-                        <p><strong>Médico:</strong> ${documentoData.medicoNome || '—'} ${documentoData.medicoCRM || ''}</p>
-                        <p><strong>Emissão:</strong> ${formatarData(documentoData.dataEmissao)}</p>
-                        <hr>
-                        <div>${(documentoData.conteudo || '').replace(/\n/g, '<br>')}</div>
-                        </body></html>
-                    `);
-                    w.document.close();
-                }
+            if (!arquivoUrl) {
+                alert('Nenhum arquivo anexado a este documento.');
                 return;
             }
-            // Abre PDF em nova aba ou embute
             const frame = document.getElementById('pdfFrame');
+            const img = document.getElementById('imgPreview');
             const ph = document.getElementById('placeholder');
-            frame.src = pdfUrlAtual;
-            frame.style.display = 'block';
+
+            if (isImagem(arquivoUrl)) {
+                img.src = arquivoUrl;
+                img.style.display = 'block';
+                frame.style.display = 'none';
+            } else {
+                frame.src = arquivoUrl;
+                frame.style.display = 'block';
+                img.style.display = 'none';
+            }
             ph.style.display = 'none';
         }
 
         async function carregarDocumento() {
             try {
                 const params = new URLSearchParams(window.location.search);
-                const idOrigem = params.get('idOrigem') || params.get('id');
-                const tipoOrigem = params.get('tipoOrigem') || params.get('tipo');
+                // aceita idOrigem, id ou codigo
+                const idOrigem = params.get('idOrigem') || params.get('id') || params.get('codigo');
 
                 if (!idOrigem) {
-                    setStatus('invalid', 'Parâmetros inválidos');
+                    setStatus('invalid', 'Informe o código do documento na URL');
                     document.getElementById('sidebarBody').innerHTML =
-                        '<p style="color:#E74C3C;text-align:center;padding:20px;">Documento não informado na URL.</p>';
+                        '<p style="color:#c62828;text-align:center;padding:24px 12px;">Documento não informado.<br><small>Use ?idOrigem=CODIGO ou ?codigo=CODIGO</small></p>';
                     return;
                 }
 
-                const response = await fetch(`${API_URL}/documentos/${encodeURIComponent(idOrigem)}?cliente=10`);
+                const response = await fetch(apiUrl('/documentos/' + encodeURIComponent(idOrigem) + '?cliente=10'));
                 const data = await response.json();
 
                 if (!data.success || !data.data) {
                     setStatus('invalid', 'Documento não encontrado');
                     document.getElementById('sidebarBody').innerHTML =
-                        '<p style="color:#E74C3C;text-align:center;padding:20px;">Documento não encontrado ou expirado.</p>';
+                        '<p style="color:#c62828;text-align:center;padding:24px 12px;">Documento não encontrado ou expirado.</p>';
                     return;
                 }
 
                 documentoData = data.data;
-
-                // Validade
                 let valido = documentoData.ativo !== false;
-                if (documentoData.dataValidade) {
-                    const dv = new Date(documentoData.dataValidade);
-                    if (!isNaN(dv) && new Date() > dv) valido = false;
-                }
 
                 preencherSidebar(documentoData, valido);
                 preencherInfoBar(documentoData);
 
                 const nomeArquivo = documentoData.pdfUrl
                     ? documentoData.pdfUrl.split('/').pop()
-                    : `documentoAssinatura_${documentoData.id}.pdf`;
+                    : 'documentoAssinatura.pdf';
 
                 document.getElementById('viewerFilename').textContent = nomeArquivo;
                 document.getElementById('placeholderName').textContent = nomeArquivo;
-                document.getElementById('viewerMeta').textContent = tiposDocumento[documentoData.tipo] || documentoData.tipo || '';
 
-                pdfUrlAtual = documentoData.pdfUrl || null;
-                const btn = document.getElementById('btnAbrir');
-                btn.disabled = false;
+                arquivoUrl = resolverUrlArquivo(documentoData.pdfUrl);
+                document.getElementById('btnAbrir').disabled = !arquivoUrl;
 
                 if (valido) {
                     setStatus('valid', 'Documento autenticado');
-                    setTimeout(() => {
+                    setTimeout(function () {
                         document.getElementById('statusOverlay').classList.remove('show');
-                    }, 3500);
+                    }, 2800);
                 } else {
                     setStatus('invalid', 'Documento expirado ou inativo');
                 }
-
-                // Se tiver PDF, já prepara o frame (usuário clica em Abrir)
             } catch (err) {
                 console.error(err);
-                setStatus('invalid', 'Erro ao verificar: ' + err.message);
+                setStatus('invalid', 'Erro ao verificar');
                 document.getElementById('sidebarBody').innerHTML =
-                    '<p style="color:#E74C3C;text-align:center;padding:20px;">Falha na verificação.</p>';
+                    '<p style="color:#c62828;text-align:center;padding:24px 12px;">Falha na verificação.<br><small>' +
+                    (err.message || '') + '</small></p>';
             }
         }
 
