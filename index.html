@@ -391,6 +391,14 @@
             return full;
         }
 
+        const TIPOS_DOC = {
+            ATESTADO_MEDICO: 'Atestado médico',
+            ATESTADO_COMPARECIMENTO: 'Atestado de comparecimento',
+            RECEITA_ESPECIAL: 'Receita Médica / Controle especial',
+            LAUDO: 'Laudos',
+            RECEITUARIO: 'Receituário'
+        };
+
         let documentoData = null;
         let arquivoUrl = null;
 
@@ -471,6 +479,10 @@
                             <li>O documento ${valido ? 'não foi' : 'pode ter sido'} modificado após a aplicação da assinatura.</li>
                             <li>A data e hora da assinatura são de uma autoridade de carimbo do tempo confiável.</li>
                         </ul>
+                    </li>
+                    <li>
+                        <strong>Tipo de documento</strong>
+                        ${TIPOS_DOC[doc.tipo] || doc.tipo || '—'}
                     </li>
                     <li>
                         <strong>Paciente</strong>
@@ -579,6 +591,7 @@
 
                 document.getElementById('viewerFilename').textContent = nomeArquivo;
                 document.getElementById('placeholderName').textContent = nomeArquivo;
+                document.getElementById('viewerMeta').textContent = TIPOS_DOC[documentoData.tipo] || documentoData.tipo || '';
 
                 arquivoUrl = resolverUrlArquivo(documentoData.pdfUrl);
                 document.getElementById('btnAbrir').disabled = !arquivoUrl;
